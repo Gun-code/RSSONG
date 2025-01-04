@@ -1,25 +1,65 @@
-/* src/components/savedMyCard.css */
+/* frontend/src/components/savedMyCard.css */
 
 .saved-my-card {
     padding: 20px;
-}
-
-.cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    text-align: center;
 }
 
 .card {
     border: 1px solid #ddd;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
-    width: 300px;
+    width: 350px;
+    margin: 0 auto;
+    /* 중앙 정렬 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-container {
+    margin: 20px 0;
 }
 
 .buttons button,
 .record-section button {
     margin: 5px;
+    padding: 10px 15px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.buttons button:hover,
+.record-section button:hover {
+    background-color: #0056b3;
+}
+
+.navigation-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.navigation-buttons button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.navigation-buttons button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.navigation-buttons span {
+    font-size: 16px;
+    margin: 0 10px;
 }
 
 .modal {
@@ -33,6 +73,8 @@
     padding: 30px;
     border-radius: 8px;
     outline: none;
+    width: 300px;
+    text-align: center;
 }
 
 .overlay {

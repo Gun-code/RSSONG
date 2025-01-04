@@ -14,6 +14,7 @@ function App() {
         <Route path='/' element={<Main />} />
         <Route path='/card' element={<Card />} />
         <Route path='/mycard' element={<Mycard />} />
+        <Route path='/savedmycard' element={<SavedMyCard />} />
         </Routes>
       </BrowserRouter>
     </LanguageProvider>

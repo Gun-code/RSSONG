@@ -12,12 +12,12 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000'
 
 const SavedMyCard = () => {
   const [words, setWords] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0); // 현재 단어의 인덱스
   const [recording, setRecording] = useState(false);
   const [audioURL, setAudioURL] = useState('');
   const [similarityResult, setSimilarityResult] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const mediaRecorderRef = useRef(null);
-  const [currentWord, setCurrentWord] = useState(null);
   const [userAudioBlob, setUserAudioBlob] = useState(null);
 
   useEffect(() => {
@@ -78,6 +78,7 @@ const SavedMyCard = () => {
   };
 
   const handleConfirm = async () => {
+    const currentWord = words[currentIndex];
     if (!currentWord || !userAudioBlob) {
       alert('녹음된 음성이 없거나 단어가 선택되지 않았습니다.');
       return;
@@ -112,47 +113,75 @@ const SavedMyCard = () => {
     }
   };
 
+  const handleNext = () => {
+    if (currentIndex < words.length - 1) {
+      setCurrentIndex(prevIndex => prevIndex + 1);
+      resetRecordingState();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prevIndex => prevIndex - 1);
+      resetRecordingState();
+    }
+  };
+
+  const resetRecordingState = () => {
+    setRecording(false);
+    setAudioURL('');
+    setUserAudioBlob(null);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  if (words.length === 0) {
+    return <div className="saved-my-card"><h1>Saved My Words</h1><p>단어를 불러오는 중입니다...</p></div>;
+  }
+
+  const currentWord = words[currentIndex];
+
   return (
     <div className="saved-my-card">
       <h1>Saved My Words</h1>
-      <div className="cards-container">
-        {words.map(word => (
-          <div key={word.id} className="card">
-            <h2>{word.word} / {word.translated_text}</h2>
-            
-            {/* 이미지 표시 섹션 추가 */}
-            <div className="image-container">
-              <img
-                src={`/database/images/${word.path}`}
-                alt={word.word}
-                onError={(e) => { 
-                  e.target.onerror = null; 
-                  e.target.src = `/database/images/${word.path}`; // 기본 이미지 경로로 변경
-                }}
-                style={{ width: '200px', height: '200px', objectFit: 'cover' }}
-              />
-            </div>
-            
-            <div className="buttons">
-              <button onClick={() => playAudio(`${BACKEND_URL}${word.tts_en_url}`)}>🔊 영어 듣기</button>
-              <button onClick={() => playAudio(`${BACKEND_URL}${word.tts_ko_url}`)}>🔊 한국어 듣기</button>
-            </div>
-            <div className="record-section">
-              <button onClick={() => { setCurrentWord(word); startRecording(); }} disabled={recording}>
-                {recording && currentWord && currentWord.id === word.id ? '녹음 중...' : '🔴 녹음 시작'}
-              </button>
-              {recording && currentWord && currentWord.id === word.id && (
-                <button onClick={stopRecording}>⏹️ 녹음 중지</button>
-              )}
-              {audioURL && currentWord && currentWord.id === word.id && (
-                <>
-                  <audio src={audioURL} controls />
-                  <button onClick={handleConfirm}>확인</button>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
+      <div className="card">
+        <h2>{currentWord.word} / {currentWord.translated_text}</h2>
+        
+        {/* 이미지 표시 섹션 추가 */}
+        <div className="image-container">
+          <img
+            src={`${BACKEND_URL}${currentWord.path}`} // 수정된 부분
+            alt={currentWord.word}
+            style={{ width: '200px', height: '200px', objectFit: 'cover' }}
+          />
+        </div>
+        
+        <div className="buttons">
+          <button onClick={() => playAudio(`${BACKEND_URL}${currentWord.tts_en_url}`)}>🔊 영어 듣기</button>
+          <button onClick={() => playAudio(`${BACKEND_URL}${currentWord.tts_ko_url}`)}>🔊 한국어 듣기</button>
+        </div>
+        <div className="record-section">
+          <button onClick={startRecording} disabled={recording}>
+            {recording ? '녹음 중...' : '🔴 녹음 시작'}
+          </button>
+          {recording && (
+            <button onClick={stopRecording}>⏹️ 녹음 중지</button>
+          )}
+          {audioURL && (
+            <>
+              <audio src={audioURL} controls />
+              <button onClick={handleConfirm}>확인</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 네비게이션 버튼 */}
+      <div className="navigation-buttons">
+        <button onClick={handlePrevious} disabled={currentIndex === 0}>이전</button>
+        <span>{currentIndex + 1} / {words.length}</span>
+        <button onClick={handleNext} disabled={currentIndex === words.length - 1}>다음</button>
       </div>
 
       <Modal
