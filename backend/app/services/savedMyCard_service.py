@@ -1,5 +1,3 @@
-# app/services/savedMyCard_service.py
-
 from app.repository.db_repository import DBRepository
 from app.services.translation import translate_text
 from app.services.textToVoice import generate_tts
@@ -12,16 +10,16 @@ class SavedMyCardService:
 
     async def get_mywords_with_processing(self):
         """
-        myword가 True인 모든 단어를 가져와 번역 및 TTS 생성을 수행합니다.
+        username이 'user1'인 모든 단어를 가져와 번역 및 TTS 생성을 수행합니다.
         """
         try:
-            # MongoDB에서 myword가 True인 모든 문서 조회
-            mywords = await self.repository.get_items_by_filter("items", {"myword": True})
+            # MongoDB에서 username이 'user1'인 모든 문서 조회
+            mywords = await self.repository.get_item_by_username("items", "user1")
 
             processed_items = []
 
             for word in mywords:
-                name_en = word['name']
+                name_en = word['word']
                 image_path = word['path']
 
                 # 번역 (영어 -> 한국어)
@@ -38,15 +36,15 @@ class SavedMyCardService:
                 await asyncio.to_thread(generate_tts, text=translated_ko, lang='ko', file_name=tts_ko_filename)
 
                 # TTS URL 설정
-                tts_en_url = f"app/static/{tts_en_filename}"
+                tts_en_url = f"/static/{tts_en_filename}"
                 tts_ko_url = f"/static/{tts_ko_filename}"
 
-                # 이미지 URL 설정 (필요 시 조정)
-                image_url = f"app/static/images/{os.path.basename(image_path)}"
+                # 이미지 URL 설정
+                image_url = f"/static/images/{os.path.basename(image_path)}"
 
                 processed_item = {
                     "id": str(word['_id']),
-                    "name": name_en,
+                    "word": name_en,
                     "translated_text": translated_ko,
                     "path": image_url,
                     "tts_en_url": tts_en_url,
@@ -61,7 +59,7 @@ class SavedMyCardService:
             print(f"Error in get_mywords_with_processing: {e}")
             return []
 
-    async def compare_audio_files_async(self, file1_path: str, file2_path: str) -> str:
+    async def compare_audio_files(self, file1_path: str, file2_path: str) -> str:
         """
         두 음성 파일의 유사도 계산 (비동기)
         """
@@ -70,5 +68,5 @@ class SavedMyCardService:
             similarity = await asyncio.to_thread(compare_audio_files, file1_path, file2_path)
             return similarity
         except Exception as e:
-            print(f"Error in compare_audio_files_async: {e}")
+            print(f"Error in compare_audio_files: {e}")
             return "유사도 계산 중 오류가 발생했습니다."
