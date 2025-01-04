@@ -8,8 +8,6 @@ librosa
 numpy
 scikit-learn
 pydantic
-motor
-pydantic
-googletrans==4.0.0-rc1
+
 
 
