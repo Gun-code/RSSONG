@@ -1,5 +1,5 @@
 # 객체 감지
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from app.services.objectDetection import detect_objects
 import os
 import shutil
@@ -15,18 +15,39 @@ from fastapi.responses import StreamingResponse
 from io import BytesIO
 import zipfile
 
+# MongoDB
+from fastapi import FastAPI, HTTPException, APIRouter
+from motor.motor_asyncio import AsyncIOMotorClient
+from app.repository.db_repository import DBRepository
+from app.services.dbtest import WordService
+from app.model.word_model import wordModel
+
+
 router = APIRouter()
+
+# MongoDB 연결 설정
+MONGO_URI = "mongodb://221.148.97.237:27170"
+client = AsyncIOMotorClient(MONGO_URI)
+db = client["miniproject"]
+
+# Repository 및 Service 초기화
+repository = DBRepository(db)
+ws = WordService(repository)
+
 
 # 업로드 이미지 저장 경로
 UPLOAD_DIR = "../database/images/"
 
 @router.post("/scan/")
-async def scan_in_image(file: UploadFile = File(...), lang: str = str):
+async def scan_in_image(file: UploadFile = File(...), lang: str = Form(...)):
     """
     이미지에서 객체 감지
     :param file: 업로드된 이미지
     :return: 감지된 객체 이름
     """
+    print(f"Received file: {file.filename}")
+    print(f"Received language: {lang}")
+
     if not os.path.exists(UPLOAD_DIR):
         os.makedirs(UPLOAD_DIR)
         
@@ -40,13 +61,27 @@ async def scan_in_image(file: UploadFile = File(...), lang: str = str):
         await file.close()
         
         # 이미지 처리
-        detected_object = detect_objects(file_path)
+        detected_object = detect_objects(file_path).strip()
 
         # 확장자 추출
         file_extension = os.path.splitext(file.filename)[1]  # 예: ".jpg", ".png"
+        new_file_name = f"{detected_object}{file_extension}"
+        new_file_path = os.path.join(UPLOAD_DIR, new_file_name)
 
-        # 이미지 파일이름 변경
-        os.rename(file_path, file_path.replace(file.filename, f"{detected_object}{file_extension}"))
+        # shutil.move()로 덮어쓰기 허용하며 이동
+        shutil.move(file_path, new_file_path)
+        
+        # DB에 동일한 word가 있는지 확인
+        item = await ws.get_item_by_word(detected_object)
+
+        # DB에 저장 및 업데이트
+        data = {"word": detected_object, "path": f"{detected_object}{file_extension}", "username": "user100"}
+        if item:
+            # 존재하는 단어 업데이트
+            await ws.update_item(item["_id"], data)
+        else:
+            await ws.create_item(data)
+    
 
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -103,4 +138,8 @@ async def scan_in_image(file: UploadFile = File(...), lang: str = str):
 
     # zip 파일 반환
     zip_buffer.seek(0)
-    return StreamingResponse(zip_buffer, media_type="application/zip", headers={"Content-Disposition": "attachment; filename=audio.zip"})
+    return StreamingResponse(
+        zip_buffer, 
+        media_type="application/zip", 
+        headers={"Content-Disposition": "attachment; filename=files.zip"}
+        )

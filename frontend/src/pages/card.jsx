@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import JSZip from 'jszip';
 import Webcam from 'react-webcam';
 import { isMobile } from 'react-device-detect';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,11 +38,11 @@ const Card = () => {
   const { language } = useLanguage();
 
   // 객체 감지 결과 (영어) & 번역 결과 (한국어)
-  const [detectedObjectEn, setDetectedObjectEn] = useState('');
+  const [detectedObjectLan, setdetectedObjectLan] = useState('');
   const [detectedObjectKo, setDetectedObjectKo] = useState('');
 
   // TTS 재생용 URL (영어, 한국어)
-  const [englishTtsUrl, setEnglishTtsUrl] = useState(null);
+  const [transTtsUrl, settransTtsUrl] = useState(null);
   const [koreanTtsUrl, setKoreanTtsUrl] = useState(null);
 
   // 유사도 체크 결과
@@ -82,71 +83,55 @@ const Card = () => {
   };
 
   // ------------------------------------------
-  // (1) 이미지 업로드 & 객체 감지 & 번역 & TTS
+  // 기능 1) 이미지 업로드 & 객체 감지 & 번역 & TTS
   // ------------------------------------------
   const handleUploadImage = async () => {
     if (!selectedImage) return;
 
     try {
-      // 1) 객체 감지
+      // 1) scan API 호출 zip 파일 받기
       const formData = new FormData();
       formData.append('file', selectedImage);
+      formData.append('lang', language);
 
-      const detectResponse = await axios.post(
-        `${BACKEND_URL}/detect/`,
+      const response = await axios.post(
+        `${BACKEND_URL}/scan/`,
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-      const detectedEn = detectResponse.data.detected_object || 'unknown';
-      console.log('객체 감지 결과(영어):', detectedEn);
-      setDetectedObjectEn(detectedEn);
-
-      // 2) 영어 → 한국어 번역 (백엔드 번역 API 호출)
-      const translateResponse = await axios.get(
-        `${BACKEND_URL}/translate/`,
         {
-          params: {
-            text: detectedEn,
-            lang: 'ko',
-          },
+          headers: { 'Content-Type': 'multipart/form-data' },
+          responseType: 'arraybuffer', // 바이너리 데이터로 처리
         }
       );
-      const koWord = translateResponse.data.translated_text;
-      console.log('번역 결과(한국어):', koWord);
-      setDetectedObjectKo(koWord);
 
-      // 3) 영어, 한국어 각각 TTS 파일 받기
-      //   (응답은 blob 형태 - gTTS가 생성한 mp3)
-      //   * 영어
-      const enTtsRes = await axios.get(
-        `${BACKEND_URL}/tts/`,
-        {
-          params: {
-            text: detectedEn,
-            lang: 'en',
-            file_name: 'en.mp3',
-          },
-          responseType: 'blob',
+      // 2) zip 파일 받아서 JSZip 인스턴스 생성 및 파일 로드
+      const zip = new JSZip();
+      const loadedZip = await zip.loadAsync(response.data);
+
+      // 3) 파일 내용 읽기
+      for (const filename of Object.keys(loadedZip.files)) {
+        const fileData = await loadedZip.files[filename].async('blob'); // 파일 데이터 읽기
+
+        // 파일 이름으로 언어 구분
+        if (filename.startsWith('kor'))
+          if (filename.endsWith('.mp3')){
+            setKoreanTtsUrl(URL.createObjectURL(fileData));
+            console.log(`파일 이름: ${filename}, 크기: ${fileData.size}, MIME 타입: ${fileData.type}`);
+          }
+          else{
+            setDetectedObjectKo(await fileData.text());
+            console.log(`파일 이름: ${filename}, 크기: ${fileData.size}, MIME 타입: ${fileData.type}`);
+          }
+        else{
+          if (filename.endsWith('.mp3')){
+            settransTtsUrl(URL.createObjectURL(fileData));
+            console.log(`파일 이름: ${filename}, 크기: ${fileData.size}, MIME 타입: ${fileData.type}`);
+          }
+          else{
+            setdetectedObjectLan(await fileData.text());
+            console.log(`파일 이름: ${filename}, 크기: ${fileData.size}, MIME 타입: ${fileData.type}`);
+          }
         }
-      );
-      const enTtsBlobUrl = URL.createObjectURL(enTtsRes.data);
-      setEnglishTtsUrl(enTtsBlobUrl);
-
-      //   * 한국어
-      const koTtsRes = await axios.get(
-        `${BACKEND_URL}/tts/`,
-        {
-          params: {
-            text: koWord,
-            lang: 'ko',
-            file_name: 'ko.mp3',
-          },
-          responseType: 'blob',
-        }
-      );
-      const koTtsBlobUrl = URL.createObjectURL(koTtsRes.data);
-      setKoreanTtsUrl(koTtsBlobUrl);
-
+      }      
       alert('객체 감지 + 번역 + TTS 완료!');
     } catch (error) {
       console.error('이미지 업로드/객체 감지/TTS 실패:', error);
@@ -155,7 +140,7 @@ const Card = () => {
   };
 
   // ------------------------------------------
-  // (2) "다시찍기" (웹캠 또는 모바일 파일 선택)
+  // 기능 2) "다시찍기" (웹캠 또는 모바일 파일 선택)
   // ------------------------------------------
   const handleRetake = () => {
     if (!isMobile) {
@@ -166,6 +151,9 @@ const Card = () => {
         fileInputRef.current.value = null; // 기존 파일 초기화
         fileInputRef.current.click(); // 내장 카메라 앱 실행
       }
+      else 
+        alert('파일 입력 요소를 찾을 수 없습니다.');
+      
     }
   };
 
@@ -184,7 +172,7 @@ const Card = () => {
   };
 
   // ------------------------------------------
-  // (3) 음성 녹음 & 업로드 + 유사도 체크
+  // 기능 3) 음성 녹음 & 업로드 + 유사도 체크
   // ------------------------------------------
   const handleAudioStop = (blob) => {
     setAudioBlob(blob);
@@ -224,26 +212,28 @@ const Card = () => {
   // (4) 영어 TTS 음성과 사용자 음성 similarity 체크
   // ------------------------------------------
   const handleCheckSimilarity = async (uploadedBlob = null) => {
-    if (!englishTtsUrl || (!audioBlob && !uploadedBlob)) {
+    if (!transTtsUrl || (!audioBlob && !uploadedBlob)) {
       alert('영어 TTS 음성 또는 사용자 음성이 준비되지 않았습니다.');
       return;
     }
 
     try {
       // 영어 TTS 음성을 Blob으로 가져오기
-      const ttsBlob = await fetch(englishTtsUrl).then((r) => r.blob());
+      const tempBlob = await fetch(transTtsUrl, {cache: "no-store"}).then((r) => r.blob());
+      const ttsBlob = new Blob([tempBlob], { type: 'audio/mpeg' });
       const userBlob = uploadedBlob || audioBlob;
 
       // FormData 생성
       const formData = new FormData();
-      formData.append('file1', ttsBlob, 'tts_en.mp3'); // 필드 이름: file1
+      formData.append('file1', ttsBlob, 'trans.mp3'); // 필드 이름: file1
       formData.append('file2', userBlob, 'recorded_audio.webm'); // 필드 이름: file2
 
       // Axios 요청
-      console.log("Sending FormData:", {
-        file1: 'tts_en.mp3',
-        file2: 'recorded_audio.webm'
-      });
+      const resp = await fetch(transTtsUrl);
+
+      console.log("TTS Blob:", ttsBlob);
+      console.log("User Blob:", userBlob);
+
       const response = await axios.post(`${BACKEND_URL}/similarity/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -341,13 +331,10 @@ const Card = () => {
 
       {/* 감지된 결과 & TTS 플레이 영역 */}
       {/* 예: apple / 사과  */}
-      {detectedObjectEn && (
+      {detectedObjectLan && (
         <div className="result-container">
           {/* 영어 단어 & 재생 버튼 */}
-          <span className="object-en">{detectedObjectEn}</span>
-          <button onClick={() => playAudio(englishTtsUrl)} className="tts-btn">
-            스피커(영어)
-          </button>
+          <span className="object-en"onClick={() => playAudio(transTtsUrl)} >{detectedObjectLan}</span>
 
           {/* 녹음 버튼 */}
           <button onClick={openAudioModal} className="record-btn">
@@ -356,10 +343,7 @@ const Card = () => {
           </button>
 
           {/* 한국어 단어 & 재생 버튼 */}
-          <span className="object-ko">{detectedObjectKo}</span>
-          <button onClick={() => playAudio(koreanTtsUrl)} className="tts-btn">
-            스피커(한국어)
-          </button>
+          <span className="object-ko" onClick={() => playAudio(koreanTtsUrl)} >{detectedObjectKo}</span>
         </div>
       )}
 
