@@ -26,25 +26,13 @@ async def create_item(item: wordModel):
     return {"message": "Item created successfully", "id": id}
 
 
-@router.get("/words/{word}")
-async def get_word(word: str):
+@router.get("/words/{id}")
+async def get_item(id: str):
     """
     ID를 기준으로 항목을 조회하는 엔드포인트.
     """
-    item = await ws.get_item_by_word(word)
+    item = await ws.get_item_by_id(id)
     if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return item
-
-
-@router.get("/wordslist/{username}")
-async def get_itemlist(username: str):
-    """
-    ID를 기준으로 항목을 조회하는 엔드포인트.
-    """
-    item = await ws.get_item_by_username(username)
-    if not item:
-        print(item)
         raise HTTPException(status_code=404, detail="Item not found")
     return item
 
