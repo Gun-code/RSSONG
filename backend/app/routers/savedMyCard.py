@@ -1,5 +1,3 @@
-# app/routers/savedMyCard.py
-
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.services.savedMyCard_service import SavedMyCardService
 from app.repository.db_repository import DBRepository
@@ -25,11 +23,15 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.get("/savedMyCard/mywords/")
 async def get_mywords():
     """
-    myword가 True인 모든 단어를 번역, TTS 생성 후 반환하는 엔드포인트.
+    username이 'user1'인 모든 단어를 번역, TTS 생성 후 반환하는 엔드포인트.
     """
     try:
         processed_items = await service.get_mywords_with_processing()
+        if not processed_items:
+            raise HTTPException(status_code=404, detail="해당 사용자의 단어를 찾을 수 없습니다.")
         return {"items": processed_items}
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"오류 발생: {str(e)}")
 
@@ -48,7 +50,7 @@ async def check_similarity(file1: UploadFile = File(...), file2: UploadFile = Fi
             shutil.copyfileobj(file2.file, f2)
 
         # 유사도 계산
-        similarity = service.compare_audio_files(file1_path, file2_path)
+        similarity = await service.compare_audio_files(file1_path, file2_path)
 
         # 저장된 파일 삭제
         os.remove(file1_path)

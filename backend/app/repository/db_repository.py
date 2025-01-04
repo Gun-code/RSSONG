@@ -1,7 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson.objectid import ObjectId
 
-
 class DBRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
@@ -12,7 +11,6 @@ class DBRepository:
         """
         result = await self.db[collection].insert_one(data)
         return str(result.inserted_id)
-    
 
     async def get_item_by_word(self, collection: str, word: str) -> dict:
         """
@@ -23,7 +21,7 @@ class DBRepository:
         if result:
             result["_id"] = str(result["_id"])  # ObjectId를 문자열로 변환
         return result
-    
+
     async def get_item_by_username(self, collection: str, username: str) -> list:
         """
         사용자 이름을 기준으로 MongoDB에서 단어를 조회합니다.
@@ -32,8 +30,7 @@ class DBRepository:
         if results:
             for result in results:
                 result["_id"] = str(result["_id"])  # 각 문서의 ObjectId를 문자열로 변환
-        
-        return result
+        return results  # 수정된 부분: result → results
 
     async def update_item(self, collection: str, item_id: str, data: dict) -> bool:
         """

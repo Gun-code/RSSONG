@@ -1,10 +1,14 @@
-// src/components/savedMyCard.jsx
+// frontend/src/components/SavedMyCard.jsx
 
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 
 Modal.setAppElement('#root'); // 접근성을 위해 필요
+
+// 환경 변수에서 백엔드 URL을 가져옵니다.
+// .env 파일에 REACT_APP_BACKEND_URL을 설정해야 합니다.
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
 
 const SavedMyCard = () => {
   const [words, setWords] = useState([]);
@@ -22,14 +26,19 @@ const SavedMyCard = () => {
 
   const fetchMyWords = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/savedMyCard/mywords/');
+      const response = await axios.get(`${BACKEND_URL}/savedMyCard/mywords/`);
       setWords(response.data.items);
     } catch (error) {
       console.error('Error fetching my words:', error);
+      alert('단어를 불러오는 데 문제가 발생했습니다.');
     }
   };
 
   const playAudio = (url) => {
+    if (!url) {
+      console.error('No audio URL provided');
+      return;
+    }
     const audio = new Audio(url);
     audio.play().catch((err) => console.error('Audio playback error:', err));
   };
@@ -55,21 +64,27 @@ const SavedMyCard = () => {
       })
       .catch(err => {
         console.error('Error accessing microphone:', err);
+        alert('마이크 접근에 문제가 있습니다.');
         setRecording(false);
       });
   };
 
   const stopRecording = () => {
     setRecording(false);
-    mediaRecorderRef.current.stop();
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
   };
 
   const handleConfirm = async () => {
-    if (!currentWord || !userAudioBlob) return;
+    if (!currentWord || !userAudioBlob) {
+      alert('녹음된 음성이 없거나 단어가 선택되지 않았습니다.');
+      return;
+    }
 
     try {
       // TTS 음성 파일 가져오기
-      const ttsResponse = await axios.get(`http://127.0.0.1:8000${currentWord.tts_en_url}`, {
+      const ttsResponse = await axios.get(`${BACKEND_URL}${currentWord.tts_en_url}`, {
         responseType: 'blob',
       });
 
@@ -82,7 +97,7 @@ const SavedMyCard = () => {
       formData.append('file1', ttsFile);
       formData.append('file2', userFile);
 
-      const response = await axios.post('http://127.0.0.1:8000/savedMyCard/similarity/', formData, {
+      const response = await axios.post(`${BACKEND_URL}/savedMyCard/similarity/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -92,6 +107,7 @@ const SavedMyCard = () => {
       setModalIsOpen(true);
     } catch (error) {
       console.error('Error checking similarity:', error);
+      alert('유사도 검사를 하는 중 오류가 발생했습니다.');
     }
   };
 
@@ -101,10 +117,10 @@ const SavedMyCard = () => {
       <div className="cards-container">
         {words.map(word => (
           <div key={word.id} className="card">
-            <h2>{word.name} / {word.translated_text}</h2>
+            <h2>{word.word} / {word.translated_text}</h2>
             <div className="buttons">
-              <button onClick={() => playAudio(`http://127.0.0.1:8000${word.tts_en_url}`)}>🔊 영어 듣기</button>
-              <button onClick={() => playAudio(`http://127.0.0.1:8000${word.tts_ko_url}`)}>🔊 한국어 듣기</button>
+              <button onClick={() => playAudio(`${BACKEND_URL}${word.tts_en_url}`)}>🔊 영어 듣기</button>
+              <button onClick={() => playAudio(`${BACKEND_URL}${word.tts_ko_url}`)}>🔊 한국어 듣기</button>
             </div>
             <div className="record-section">
               <button onClick={() => { setCurrentWord(word); startRecording(); }} disabled={recording}>
