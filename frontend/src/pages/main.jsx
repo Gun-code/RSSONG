@@ -10,6 +10,7 @@ import MainBar from '../images/MAIN-BAR.png';
 import { isMobile } from 'react-device-detect';
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 function MainPage() {
     
@@ -21,15 +22,32 @@ function MainPage() {
 
   const [selectedLogo, setSelectedLogo] = useState(Logo);  // 기본 로고로 시작
 
+  const { language, setLanguage } = useLanguage();
+
     const handleLanguageChange = (e) => {
         const lang = e.target.value;
+
+        // lang이 null 일 때
+        if (lang === null) {
+          if (language === 'ch') {
+            setSelectedLogo(LogoCh);      // 중국어 선택시
+          } else if (language === 'ja') {
+            setSelectedLogo(LogoJp);      // 일본어 선택시
+          } else {
+            setSelectedLogo(Logo);        // 영어 선택시
+          }
+        }
         if (lang === 'ch') {
             setSelectedLogo(LogoCh);      // 중국어 선택시
+            setLanguage('ch');
         } else if (lang === 'ja') {
             setSelectedLogo(LogoJp);      // 일본어 선택시
+            setLanguage('ja');
         } else {
             setSelectedLogo(Logo);        // 영어 선택시
+            setLanguage('en');
         }
+      
     };
   // 모바일에서 카메라 아이콘을 클릭했을 때 호출
   const handleMobileCameraClick = () => {
