@@ -1,6 +1,7 @@
 # main.py
+
 from fastapi import FastAPI
-from app.routers import textToVoice, similarity, objectDetection, audio, translation,dbtest
+from app.routers import textToVoice, similarity, objectDetection, audio, translation, dbtest, savedMyCard  # savedMyCard 추가
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -10,8 +11,9 @@ app.include_router(textToVoice.router)
 app.include_router(similarity.router)
 app.include_router(objectDetection.router)
 app.include_router(audio.router)
-app.include_router(translation.router)  # translation 라우터 추가
-app.include_router(dbtest.router)  # dbtest 라우터 추가
+app.include_router(translation.router)
+app.include_router(dbtest.router)
+app.include_router(savedMyCard.router)  # savedMyCard 라우터 추가
 
 # CORS 설정
 origins = [
