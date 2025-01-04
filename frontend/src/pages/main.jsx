@@ -8,47 +8,40 @@ import CameraIcon from '../images/Cam.png';
 import AlbumIcon from '../images/elbum.png';
 import MainBar from '../images/MAIN-BAR.png';
 import { isMobile } from 'react-device-detect';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, use } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
 function MainPage() {
-    
-
   const navigate = useNavigate();
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const fileInputRef = useRef(null);
-
-
-  const [selectedLogo, setSelectedLogo] = useState(Logo);  // 기본 로고로 시작
-
   const { language, setLanguage } = useLanguage();
+  const [selectedLogo, setSelectedLogo] = useState(() => {
+    if(language === 'ch') {
+      return LogoCh;
+    } else if(language === 'jp') {
+      return LogoJp;
+    } else {
+      return Logo;
+    }
+  });  // 기본 로고로 시작
 
-    const handleLanguageChange = (e) => {
-        const lang = e.target.value;
-
-        // lang이 null 일 때
-        if (lang === null) {
-          if (language === 'ch') {
-            setSelectedLogo(LogoCh);      // 중국어 선택시
-          } else if (language === 'ja') {
-            setSelectedLogo(LogoJp);      // 일본어 선택시
-          } else {
-            setSelectedLogo(Logo);        // 영어 선택시
-          }
-        }
-        if (lang === 'ch') {
-            setSelectedLogo(LogoCh);      // 중국어 선택시
-            setLanguage('ch');
-        } else if (lang === 'ja') {
-            setSelectedLogo(LogoJp);      // 일본어 선택시
-            setLanguage('ja');
-        } else {
-            setSelectedLogo(Logo);        // 영어 선택시
-            setLanguage('en');
-        }
-      
-    };
+  const handleLanguageChange = (e) => {
+    const lang = e.target.value; // 드롭다운에서 선택된 값
+  
+    if (lang === 'ch') {
+      setSelectedLogo(LogoCh); // 중국어 로고 설정
+      setLanguage('ch'); // 언어 상태를 중국어로 설정
+    } else if (lang === 'jp') {
+      setSelectedLogo(LogoJp); // 일본어 로고 설정
+      setLanguage('jp'); // 언어 상태를 일본어로 설정
+    } else {
+      setSelectedLogo(Logo); // 영어 로고 설정
+      setLanguage('en'); // 언어 상태를 영어로 설정
+    }
+  };
+  
   // 모바일에서 카메라 아이콘을 클릭했을 때 호출
   const handleMobileCameraClick = () => {
     if (fileInputRef.current) {
@@ -72,10 +65,10 @@ function MainPage() {
             <div className="main">
                 <div className="background-container">
                     <div className="language-selector">
-                        <select id="language" onChange={handleLanguageChange}>
+                        <select id="language" value={language} onChange={handleLanguageChange}>
                             <option value="en">English</option>
                             <option value="ch">中文</option>
-                            <option value="ja">日本語</option>
+                            <option value="jp">日本語</option>
                         </select>
                     </div>
                     <img src={selectedLogo} alt="logo" className="Logo" /> {/* 선택된 로고를 렌더링 */}
