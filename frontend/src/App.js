@@ -3,6 +3,7 @@ import { LanguageProvider } from './context/LanguageContext.js';
 import Main from './pages/main.jsx';
 import Card from '../src/pages/card.jsx';
 import Mycard from '../src/pages/myCard.jsx';
+import SavedMyCard from '../src/pages/savedMyCard.jsx';
 
 
 function App() {
