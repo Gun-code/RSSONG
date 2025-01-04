@@ -27,6 +27,7 @@ const SavedMyCard = () => {
   const fetchMyWords = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/savedMyCard/mywords/`);
+      console.log('Fetched words:', response.data.items); // 데이터 확인을 위한 로그 추가
       setWords(response.data.items);
     } catch (error) {
       console.error('Error fetching my words:', error);
@@ -118,6 +119,20 @@ const SavedMyCard = () => {
         {words.map(word => (
           <div key={word.id} className="card">
             <h2>{word.word} / {word.translated_text}</h2>
+            
+            {/* 이미지 표시 섹션 추가 */}
+            <div className="image-container">
+              <img
+                src={`/database/images/${word.path}`}
+                alt={word.word}
+                onError={(e) => { 
+                  e.target.onerror = null; 
+                  e.target.src = `/database/images/${word.path}`; // 기본 이미지 경로로 변경
+                }}
+                style={{ width: '200px', height: '200px', objectFit: 'cover' }}
+              />
+            </div>
+            
             <div className="buttons">
               <button onClick={() => playAudio(`${BACKEND_URL}${word.tts_en_url}`)}>🔊 영어 듣기</button>
               <button onClick={() => playAudio(`${BACKEND_URL}${word.tts_ko_url}`)}>🔊 한국어 듣기</button>

@@ -40,7 +40,7 @@ class SavedMyCardService:
                 tts_ko_url = f"/static/{tts_ko_filename}"
 
                 # 이미지 URL 설정
-                image_url = f"/static/images/{os.path.basename(image_path)}"
+                image_url = f"/database/images/{os.path.basename(image_path)}"
 
                 processed_item = {
                     "id": str(word['_id']),
