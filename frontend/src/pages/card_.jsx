@@ -37,7 +37,7 @@ const Card = () => {
   const { language } = useLanguage();
 
   // 객체 감지 결과 (영어) & 번역 결과 (한국어)
-  const [detectedObjectEn, setDetectedObjectEn] = useState('');
+  const [detectedObjectLan, setdetectedObjectLan] = useState('');
   const [detectedObjectKo, setDetectedObjectKo] = useState('');
 
   // TTS 재생용 URL (영어, 한국어)
@@ -91,25 +91,12 @@ const Card = () => {
       // 1) 객체 감지
       const formData = new FormData();
       formData.append('file', selectedImage);
+      formData.append('lang', language);
 
-      const detectResponse = await axios.post(
-        `${BACKEND_URL}/detect/`,
+      const response = await axios.post(
+        `${BACKEND_URL}/scan/`,
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-      const detectedEn = detectResponse.data.detected_object || 'unknown';
-      console.log('객체 감지 결과(영어):', detectedEn);
-      setDetectedObjectEn(detectedEn);
-
-      // 2) 영어 → 한국어 번역 (백엔드 번역 API 호출)
-      const translateResponse = await axios.get(
-        `${BACKEND_URL}/translate/`,
-        {
-          params: {
-            text: detectedEn,
-            lang: 'ko',
-          },
-        }
       );
       const koWord = translateResponse.data.translated_text;
       console.log('번역 결과(한국어):', koWord);
@@ -341,10 +328,10 @@ const Card = () => {
 
       {/* 감지된 결과 & TTS 플레이 영역 */}
       {/* 예: apple / 사과  */}
-      {detectedObjectEn && (
+      {detectedObjectLan && (
         <div className="result-container">
           {/* 영어 단어 & 재생 버튼 */}
-          <span className="object-en">{detectedObjectEn}</span>
+          <span className="object-en">{detectedObjectLan}</span>
           <button onClick={() => playAudio(englishTtsUrl)} className="tts-btn">
             스피커(영어)
           </button>
