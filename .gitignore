@@ -77,3 +77,4 @@ coverage/
 # Static 및 Media Files (필요 시)
 staticfiles/
 mediafiles/
+*.mp3
