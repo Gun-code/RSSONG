@@ -12,14 +12,27 @@ class DBRepository:
         """
         result = await self.db[collection].insert_one(data)
         return str(result.inserted_id)
+    
 
-    async def get_item_by_id(self, collection: str, item_id: str) -> dict:
+    async def get_item_by_word(self, collection: str, word: str) -> dict:
         """
-        ID를 기준으로 MongoDB에서 단어를 조회합니다.
+        단어 이름을 기준으로 MongoDB에서 단어를 조회합니다.
         """
-        result = await self.db[collection].find_one({"_id": ObjectId(item_id)})
+        result = await self.db[collection].find_one({"word": word})
+
         if result:
             result["_id"] = str(result["_id"])  # ObjectId를 문자열로 변환
+        return result
+    
+    async def get_item_by_username(self, collection: str, username: str) -> list:
+        """
+        사용자 이름을 기준으로 MongoDB에서 단어를 조회합니다.
+        """
+        results = await self.db[collection].find({"username": username}).to_list(length=None)
+        if results:
+            for result in results:
+                result["_id"] = str(result["_id"])  # 각 문서의 ObjectId를 문자열로 변환
+        
         return result
 
     async def update_item(self, collection: str, item_id: str, data: dict) -> bool:

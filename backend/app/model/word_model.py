@@ -1,4 +1,5 @@
 from pydantic import BaseModel
 class wordModel(BaseModel):
-    name: str
+    word: str
     path: str
+    username: str
