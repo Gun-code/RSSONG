@@ -11,6 +11,17 @@ class DBRepository:
         """
         result = await self.db[collection].insert_one(data)
         return str(result.inserted_id)
+    
+    async def get_all_items(self, collection: str) -> list:
+        """
+        MongoDB에서 모든 단어를 조회합니다.
+        """
+        results = await self.db[collection].find().to_list(length=None)
+    
+        if results:
+            for result in results:
+                result["_id"] = str(result["_id"])  # 각 문서의 ObjectId를 문자열로 변환
+        return results
 
     async def get_item_by_word(self, collection: str, word: str) -> dict:
         """
