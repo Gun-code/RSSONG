@@ -1,0 +1,26 @@
+.RandomCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 중앙 정렬 */
+    padding: 20px;
+    background-color: #f5f5f5; /* 배경색 */
+}
+
+.card {
+    background-color: white; /* 카드 배경색 */
+    border-radius: 10px; /* 모서리 둥글게 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+    padding: 20px;
+    margin: 20px 0; /* 카드 간격 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+.image-container {
+    margin-bottom: 15px; /* 이미지와 단어 간격 */
+}
+
+.word-container {
+    font-size: 24px; /* 단어 크기 */
+    font-weight: bold; /* 단어 굵기 */
+    color: #333; /* 글자 색상 */
+}

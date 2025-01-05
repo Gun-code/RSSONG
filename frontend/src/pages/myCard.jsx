@@ -20,7 +20,7 @@ function MyCard() {
     };
     
     const handleImageClick2 = () => {
-        navigate('/allCard');
+        navigate('/randomCard');
     };
     
     return (
@@ -82,7 +82,7 @@ function MyCard() {
                     style={{ cursor: 'pointer' }}  // 마우스 오버시 포인터 커서 표시
                     />
                     </div>
-                    </div>
+                </div>
                 
             </div>
 
