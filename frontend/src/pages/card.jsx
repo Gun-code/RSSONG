@@ -22,7 +22,7 @@ import SimpleAudioRecorder from './simpleAudioRecorder';
   // ? 'http://192.168.0.129:8000'
   // : 'http://localhost:8000';
   
-  const BACKEND_URL = 'http://192.168.219.227:8000';
+  const BACKEND_URL = 'http://127.0.0.1:8000';
 
 const Card = () => {
   const location = useLocation();
@@ -219,20 +219,15 @@ const Card = () => {
 
     try {
       // 영어 TTS 음성을 Blob으로 가져오기
-      const tempBlob = await fetch(transTtsUrl, {cache: "no-store"}).then((r) => r.blob());
-      const ttsBlob = new Blob([tempBlob], { type: 'audio/mpeg' });
+      const transBlob = await fetch(transTtsUrl, {cache: "no-store"}).then((r) => r.blob());
+      const transFile = new Blob([transBlob], { type: 'audio/mpeg' });
       const userBlob = uploadedBlob || audioBlob;
+      const userFile = new File([userBlob], 'user_recording.mp3', { type: 'audio/webm' });
 
       // FormData 생성
       const formData = new FormData();
-      formData.append('file1', ttsBlob, 'trans.mp3'); // 필드 이름: file1
-      formData.append('file2', userBlob, 'recorded_audio.webm'); // 필드 이름: file2
-
-      // Axios 요청
-      const resp = await fetch(transTtsUrl);
-
-      console.log("TTS Blob:", ttsBlob);
-      console.log("User Blob:", userBlob);
+      formData.append('file1', transFile, 'trans.mp3'); // 필드 이름: file1
+      formData.append('file2', userFile, 'recorded_audio.webm'); // 필드 이름: file2
 
       const response = await axios.post(`${BACKEND_URL}/similarity/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

@@ -18,6 +18,13 @@ async def similarity(file1: UploadFile = File(...), file2: UploadFile = File(...
     두 음성 파일을 비교하여 유사도를 계산합니다.
     """
     try:
+
+        
+        print("파일1 이름:", file1.filename)
+        print("파일1 타입:", file1.content_type)
+        print("파일2 이름:", file2.filename)
+        print("파일2 타입:", file2.content_type)
+
         file1_path = os.path.join(UPLOAD_DIR, file1.filename)
         file2_path = os.path.join(UPLOAD_DIR, file2.filename)
 
