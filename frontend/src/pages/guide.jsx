@@ -2,18 +2,21 @@ import React from "react";
 import "../css/guide.css";
 import camera from "../images/Cam.png";
 import mic from "../images/record.svg";
+import Logo from "../images/LOGO.png";
+import { Link, useNavigate } from 'react-router-dom';
 
 const Guide = () => {
   return (
     <div className="guide-container">
       <div className="guide-header">
-        <div className="logo">알쏭달쏭</div>
-        <button className="close-btn">✕</button>
+      <Link to="/">
+        <img src={Logo} alt="Logo"className="logo" />
+        </Link>                   
       </div>
 
       <div className="guide-content">
         <h1 className="guide-title">
-          <span className="alert-icon">!알쏭달쏭 이용 가이드</span>
+          <h1 className="alert-icon">!알쏭달쏭 이용 가이드</h1>
         </h1>
 
         <div className="guide-steps">
@@ -44,15 +47,16 @@ const Guide = () => {
         </div>
 
         <div className="guide-buttons">
+        <Link to="/">
           <button className="btn-no">아니</button>
+        </Link>
+          <Link to="/">
           <button className="btn-yes">응!</button>
+        </Link> 
         </div>
       </div>
-
-      <div className="mascot">{/* 여우 마스코트 이미지 */}</div>
     </div>
   );
 };
 
-// 컴포넌트를 export default로 내보내기
 export default Guide;
