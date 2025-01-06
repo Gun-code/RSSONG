@@ -7,7 +7,7 @@ from app.model.word_model import wordModel
 router = APIRouter()
 
 # MongoDB 연결 설정
-MONGO_URI = "mongodb://192.168.0.236:27017"
+MONGO_URI = "mongodb://221.148.97.237:27170"
 client = AsyncIOMotorClient(MONGO_URI)
 db = client["miniproject"]
 
