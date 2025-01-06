@@ -5,7 +5,7 @@ import LogoJp from '../images/알쏭달쏭 일본어.png';  // 일본어 로고
 import MainBack from '../images/MAIN-BACK.png';
 import GuideIcon from '../images/guide.png';
 import CameraIcon from '../images/Cam.png';
-import AlbumIcon from '../images/elbum.png';
+import AlbumIcon from '../images/fox.jpg';
 import MainBar from '../images/MAIN-BAR.png';
 import { isMobile } from 'react-device-detect';
 import React, { useState, useRef, use } from 'react';
@@ -108,7 +108,9 @@ function MainPage() {
                           <img src={CameraIcon} alt="Camera" className="under-item" />
                         </Link>
                       )}
-                    <Link to="./myCard"><img src={AlbumIcon} alt="album" className="under-item" /></Link>
+                    <Link to="./myCard" className="album-link">
+                      <img src ={AlbumIcon} className = "album-icon" />
+                    </Link>
                 </div>
                 <img src={MainBar} alt="MainBar" className="underbar" />
             </div>

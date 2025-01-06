@@ -65,7 +65,7 @@
 }
 
 .MyCard_Image2 {
-    left: 70%;
+    left: 68%;
 }
 
 .MyCard_Image3 {
@@ -222,16 +222,16 @@
 .MyCard_Image1,
 .MyCard_Image2,
 .MyCard_Image3 {
-    width: 150px;
-    height: 150px;
-    margin: 10px;
+    width: 250px;
+    height: 250px;
+    margin: 5px;
     border-radius: 8px;
 }
 
 .TextBox1,
 .TextBox2 {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     font-size: 18px;
 }
 
@@ -282,6 +282,10 @@
     align-items: center;
 }
 
+.container-card{
+    margin-top: 10px;
+}
+
 .image-text-group {
     display: flex;
     flex-direction: column;
@@ -296,3 +300,28 @@
     font-weight: bold; /* 텍스트 굵기 */
     text-align: center;
 } 
+
+/* 추가 */
+
+.album-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 180px; /* 아이콘의 가로 너비 */
+    height: 180px; /* 아이콘의 세로 높이 */
+    position: relative; /* 자식 요소의 위치 조정 */
+}
+
+.album-icon {
+    width: 100%; /* 아이콘의 너비 */
+    height: 100%; /* 아이콘의 높이 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px; /* 원하는 모서리 둥글게 설정 */
+}
+
+.myCard{
+    width: 150%;
+    height: 100%;
+}
