@@ -22,6 +22,13 @@ class DBRepository:
             for result in results:
                 result["_id"] = str(result["_id"])  # 각 문서의 ObjectId를 문자열로 변환
         return results
+    
+    async def get_cnt_by_username(self, collection: str, username: str) -> int:
+        """
+        사용자 이름을 기준으로 MongoDB에서 단어를 조회합니다.
+        """
+        result = await self.db[collection].count_documents({"username": username})
+        return result
 
     async def get_item_by_word(self, collection: str, word: str) -> dict:
         """
