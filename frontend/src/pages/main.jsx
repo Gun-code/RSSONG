@@ -108,7 +108,7 @@ function MainPage() {
                           <img src={CameraIcon} alt="Camera" className="under-item" />
                         </Link>
                       )}
-                    <Link to="./myCard" className="album-link">
+                    <Link to="./mycard" className="album-link">
                       <img src ={AlbumIcon} className = "album-icon" />
                     </Link>
                 </div>

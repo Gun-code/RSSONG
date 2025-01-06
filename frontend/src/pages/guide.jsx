@@ -78,6 +78,7 @@ const Guide = () => {
           <button className="btn-no">아니</button>
         </Link>
 
+
         {/** 
                        * 모바일: 버튼 클릭 시 먼저 사진을 찍은 후, card로 이동 
                        * 데스크탑: 기존 방식대로 card로 이동하며 openCamera: true 전달 
@@ -103,6 +104,7 @@ const Guide = () => {
                       )}
           <Link to="/">
           
+
         </Link> 
         </div>
       </div>
