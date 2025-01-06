@@ -41,14 +41,10 @@ def compare_audio_files(file1_path, file2_path):
 
         # 유사도 계산: inverse transformation
         similarity = 1 / (1 + distance)
-        
-         # 퍼센트로 변환
-        similarity_percentage = int(similarity * 100000)
 
-        # 결과 메시지
-        if similarity_percentage >= 60:
-            return f"유사도: {similarity_percentage}% - 통과"
-        else:
-            return f"유사도: {similarity_percentage}% - 다시 시도"
+        # 퍼센트로 변환 (0-100)
+        similarity_percentage = float(similarity) * 100
+
+        return similarity_percentage
     except Exception as e:
         raise ValueError(f"오류 발생: {e}")

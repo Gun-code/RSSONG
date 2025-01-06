@@ -211,45 +211,54 @@ const Card = () => {
   // ------------------------------------------
   // (4) 영어 TTS 음성과 사용자 음성 similarity 체크
   // ------------------------------------------
+  // frontend/src/components/SavedMyCard.jsx
+
   const handleCheckSimilarity = async (uploadedBlob = null) => {
     if (!transTtsUrl || (!audioBlob && !uploadedBlob)) {
       alert('영어 TTS 음성 또는 사용자 음성이 준비되지 않았습니다.');
       return;
     }
-
+  
     try {
       // 영어 TTS 음성을 Blob으로 가져오기
-      const transBlob = await fetch(transTtsUrl, {cache: "no-store"}).then((r) => r.blob());
-      const transFile = new Blob([transBlob], { type: 'audio/mpeg' });
+      const transBlob = await fetch(transTtsUrl, { cache: "no-store" }).then((r) => r.blob());
+      const transFile = new File([transBlob], 'trans.mp3', { type: 'audio/mpeg' });
+  
       const userBlob = uploadedBlob || audioBlob;
-      const userFile = new File([userBlob], 'user_recording.mp3', { type: 'audio/webm' });
-
+      const userFile = new File([userBlob], 'recorded_audio.webm', { type: 'audio/webm' });
+  
       // FormData 생성
       const formData = new FormData();
-      formData.append('file1', transFile, 'trans.mp3'); // 필드 이름: file1
-      formData.append('file2', userFile, 'recorded_audio.webm'); // 필드 이름: file2
-
+      formData.append('file1', transFile, transFile.name); // 필드 이름: file1
+      formData.append('file2', userFile, userFile.name); // 필드 이름: file2
+  
+      console.log("Sending similarity check with:", {
+        file1: transFile,
+        file2: userFile
+      });
+  
       const response = await axios.post(`${BACKEND_URL}/similarity/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
+  
       console.log("Similarity response:", response.data);
-
-      const similarity = response.data.similarity;
+  
+      const similarity =response.data.similarity;
       setSimilarityScore(similarity);
-
+  
       if (similarity >= 60) { // 임계값 설정 (예: 60)
         setSimilarityMessage('참 잘했어요~');
       } else {
         setSimilarityMessage('다시 해보세요~');
       }
-
+  
       setSimilarityModalOpen(true);
     } catch (error) {
       console.error('유사도 체크 실패:', error);
       alert('유사도 체크 실패');
     }
   };
+  
 
   const handleCloseSimilarityModal = () => {
     setSimilarityModalOpen(false);
