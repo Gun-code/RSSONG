@@ -1,136 +1,172 @@
 // frontend/src/components/SavedMyCard.jsx
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Link, useLocation } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
 import Modal from 'react-modal';
+import recordIcon from '../images/record.svg';
+
 import '../css/savedMycard.css'; // 수정된 CSS 파일 임포트
 import logo from '../images/logo.svg';
+
+// SimpleAudioRecorder 임포트
+import SimpleAudioRecorder from './simpleAudioRecorder';
 
 Modal.setAppElement('#root'); // 접근성을 위해 필요
 
 // 환경 변수에서 백엔드 URL을 가져옵니다.
-// .env 파일에 REACT_APP_BACKEND_URL을 설정해야 합니다.
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
 
 const SavedMyCard = () => {
   const [words, setWords] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0); // 현재 단어의 인덱스
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [recording, setRecording] = useState(false);
   const [audioURL, setAudioURL] = useState('');
-  const [similarityResult, setSimilarityResult] = useState('');
-  const [modalIsOpen, setModalIsOpen] = useState(false);
   const mediaRecorderRef = useRef(null);
   const [userAudioBlob, setUserAudioBlob] = useState(null);
+  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [transTtsUrl, settransTtsUrl] = useState(null);
+  const [similarityScore, setSimilarityScore] = useState(null);
+  const [similarityMessage, setSimilarityMessage] = useState('');
+  const [similarityModalOpen, setSimilarityModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchMyWords();
-  }, []);
+  // 현재 단어를 정의 (useEffect 이전에 선언)
+  const currentWord = words[currentIndex];
 
-  const fetchMyWords = async () => {
+  // 단어 목록을 가져오는 함수
+  const fetchMyWords = useCallback(async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/savedMyCard/mywords/`);
-      console.log('Fetched words:', response.data.items); // 데이터 확인을 위한 로그 추가
       setWords(response.data.items);
     } catch (error) {
       console.error('Error fetching my words:', error);
       alert('단어를 불러오는 데 문제가 발생했습니다.');
     }
-  };
+  }, []);
 
-  const playAudio = (url) => {
+  useEffect(() => {
+    fetchMyWords();
+  }, [fetchMyWords]);
+
+  // currentWord가 변경될 때 transTtsUrl을 설정
+  useEffect(() => {
+    if (currentWord && currentWord.tts_en_url) {
+      const url = `${BACKEND_URL}${currentWord.tts_en_url}`;
+      settransTtsUrl(url);
+      console.log('transTtsUrl set to:', url);
+    } else {
+      settransTtsUrl(null);
+      console.log('transTtsUrl is null');
+    }
+  }, [currentWord]);
+
+  // 오디오 재생 함수
+  const playAudio = useCallback((url) => {
     if (!url) {
       console.error('No audio URL provided');
       return;
     }
     const audio = new Audio(url);
     audio.play().catch((err) => console.error('Audio playback error:', err));
+  }, []);
+
+  const openAudioModal = () => setIsAudioModalOpen(true);
+  const closeAudioModal = () => setIsAudioModalOpen(false);
+
+  const handleAudioStop = (blob) => {
+    setAudioBlob(blob);
+    console.log('녹음 완료:', blob);
   };
 
-  const startRecording = () => {
-    setRecording(true);
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-        mediaRecorderRef.current = new MediaRecorder(stream);
-        mediaRecorderRef.current.start();
-
-        const audioChunks = [];
-        mediaRecorderRef.current.ondataavailable = event => {
-          audioChunks.push(event.data);
-        };
-
-        mediaRecorderRef.current.onstop = () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
-          const url = URL.createObjectURL(audioBlob);
-          setAudioURL(url);
-          setUserAudioBlob(audioBlob);
-        };
-      })
-      .catch(err => {
-        console.error('Error accessing microphone:', err);
-        alert('마이크 접근에 문제가 있습니다.');
-        setRecording(false);
-      });
-  };
-
-  const stopRecording = () => {
-    setRecording(false);
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-    }
-  };
-
-  const handleConfirm = async () => {
-    const currentWord = words[currentIndex];
-    if (!currentWord || !userAudioBlob) {
-      alert('녹음된 음성이 없거나 단어가 선택되지 않았습니다.');
+  const handleCheckSimilarity = async (uploadedBlob = null) => {
+    console.log('transTtsUrl:', transTtsUrl);
+    console.log('audioBlob:', audioBlob);
+    
+    if (!transTtsUrl || (!audioBlob && !uploadedBlob)) {
+      alert('영어 TTS 음성 또는 사용자 음성이 준비되지 않았습니다.');
       return;
     }
 
     try {
-      // TTS 음성 파일 가져오기
-      const ttsResponse = await axios.get(`${BACKEND_URL}${currentWord.tts_en_url}`, {
-        responseType: 'blob',
-      });
+      // 영어 TTS 음성을 Blob으로 가져오기
+      const transBlob = await fetch(transTtsUrl, { cache: "no-store" }).then((r) => r.blob());
+      const transFile = new File([transBlob], 'trans.mp3', { type: 'audio/mpeg' });
 
-      const ttsBlob = new Blob([ttsResponse.data], { type: 'audio/mpeg' });
-      const ttsFile = new File([ttsBlob], 'tts_en.mp3', { type: 'audio/mpeg' });
+      const userBlob = uploadedBlob || audioBlob;
+      const userFile = new File([userBlob], 'recorded_audio.webm', { type: 'audio/webm' });
 
-      const userFile = new File([userAudioBlob], 'user_recording.mp3', { type: 'audio/mpeg' });
-
+      // FormData 생성
       const formData = new FormData();
-      formData.append('file1', ttsFile);
-      formData.append('file2', userFile);
+      formData.append('file1', transFile, transFile.name); // 필드 이름: file1
+      formData.append('file2', userFile, userFile.name); // 필드 이름: file2
 
-      const response = await axios.post(`${BACKEND_URL}/savedMyCard/similarity/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      console.log("Sending similarity check with:", {
+        file1: transFile,
+        file2: userFile
       });
 
-      setSimilarityResult(response.data.similarity);
-      setModalIsOpen(true);
+      const response = await axios.post(`${BACKEND_URL}/similarity/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      console.log("Similarity response:", response.data);
+
+      const similarity = response.data.similarity;
+      setSimilarityScore(similarity);
+
+      if (similarity >= 60) { // 임계값 설정 (예: 60)
+        setSimilarityMessage('참 잘했어요~');
+      } else {
+        setSimilarityMessage('다시 해보세요~');
+      }
+
+      setSimilarityModalOpen(true);
     } catch (error) {
-      console.error('Error checking similarity:', error);
-      alert('유사도 검사를 하는 중 오류가 발생했습니다.');
+      console.error('유사도 체크 실패:', error);
+      alert('유사도 체크 실패');
     }
   };
 
+  // 새로운 "확인 하기" 버튼 핸들러 추가
+  const handleConfirmAudio = async () => {
+    if (!audioBlob) {
+      alert('녹음된 오디오가 없습니다.');
+      return;
+    }
+
+    try {
+      // 오디오 업로드
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'recorded_audio.webm');
+
+      const res = await axios.post(`${BACKEND_URL}/upload-audio/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      console.log('오디오 업로드 성공:', res.data);
+      alert('오디오 업로드 완료! 유사도 체크 중입니다.');
+
+      // 유사도 체크 자동 수행
+      await handleCheckSimilarity(audioBlob);
+    } catch (error) {
+      console.error('오디오 업로드 실패:', error);
+      alert('오디오 업로드 실패');
+    }
+  };
+  
+  // 다음 단어로 이동
   const handleNext = () => {
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex(prevIndex => prevIndex + 1);
-      resetRecordingState();
-    }
+    setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, words.length - 1));
+    resetRecordingState();
   };
 
+  // 이전 단어로 이동
   const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prevIndex => prevIndex - 1);
-      resetRecordingState();
-    }
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    resetRecordingState();
   };
 
+  // 녹음 상태 초기화
   const resetRecordingState = () => {
     setRecording(false);
     setAudioURL('');
@@ -140,77 +176,151 @@ const SavedMyCard = () => {
     }
   };
 
-  if (words.length === 0) {
-    return <div className="smc-saved-my-card"><h1>Saved My Words</h1><p>단어를 불러오는 중입니다...</p></div>;
-  }
+  const handleCloseSimilarityModal = () => {
+    setSimilarityModalOpen(false);
+  };
 
-  const currentWord = words[currentIndex];
+  // 녹음 중 컴포넌트 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, []);
+
+  if (words.length === 0) {
+    return (
+      <>
+        <div className="home-icon">
+          <Link to="/">
+            <img src={logo} alt="홈으로 이동" />
+          </Link>
+        </div>
+        <div className="smc-saved-my-card">
+          <p className="loading-message">단어를 불러오는 중입니다...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="smc-saved-my-card">
-     {/* 홈 아이콘 */}
-     <div className="home-icon">
+      {/* 홈 아이콘 */}
+      <div className="home-icon">
         <Link to="/">
-          <img src={logo} alt="home" />
+          <img src={logo} alt="홈으로 이동" />
         </Link>
       </div>
-      <div className="smc-card">
 
+      <div className="smc-card">
+        {/* 이미지 및 네비게이션 */}
         <div className="smc-image-container">
-          <button className="smc-prev-button" onClick={handlePrevious} disabled={currentIndex === 0}>이전</button>
+          <button
+            className="smc-prev-button"
+            onClick={handlePrevious}
+            disabled={currentIndex === 0}
+            aria-label="이전 단어"
+          >
+            {/* 이전 화살표 아이콘 */}
+          </button>
           <img
-            src={`${BACKEND_URL}${currentWord.path}`} // 수정된 부분
+            src={`${BACKEND_URL}${currentWord.path}`}
             alt={currentWord.word}
             className="smc-main-img"
           />
-          <button className="smc-next-button" onClick={handleNext} disabled={currentIndex === words.length - 1}>다음</button>
-        </div>
-
-        <div className="smc-record-section">
-          <button onClick={startRecording} disabled={recording} className="smc-record-start-btn">
-            {recording ? '녹음 중...' : '🔴 녹음 시작'}
+          <button
+            className="smc-next-button"
+            onClick={handleNext}
+            disabled={currentIndex === words.length - 1}
+            aria-label="다음 단어"
+          >
+            {/* 다음 화살표 아이콘 */}
           </button>
-          {recording && (
-            <button onClick={stopRecording} className="smc-record-stop-btn">⏹️ 녹음 중지</button>
-          )}
-          {audioURL && (
-            <>
-              <audio src={audioURL} controls className="smc-audio-player" />
-              <button onClick={handleConfirm} className="smc-confirm-btn">확인</button>
-            </>
-          )}
         </div>
 
-        {/* 영어 단어와 한국어 단어를 클릭 시 음성 재생 */}
-        <div className="result-container">
+        
+      </div>
+
+      {/* 녹음 및 재생 섹션 */}
+      <div className="result-container">
           <span
             className="object-en"
-            onClick={() => playAudio(`${BACKEND_URL}${currentWord.tts_en_url}`)}
+            onClick={() => playAudio(transTtsUrl)}
+            role="button"
+            tabIndex={0}
+            aria-label={`${currentWord.word} 영어 발음 재생`}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') playAudio(transTtsUrl);
+            }}
           >
             {currentWord.word}
           </span>
+
+          {/* 녹음 버튼 */}
+          <button onClick={openAudioModal} className="record-btn">
+            <img src={recordIcon} alt="마이크" />
+            녹음
+          </button>
+
           <span
             className="object-ko"
             onClick={() => playAudio(`${BACKEND_URL}${currentWord.tts_ko_url}`)}
+            role="button"
+            tabIndex={0}
+            aria-label={`${currentWord.translated_text} 한국어 발음 재생`}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') playAudio(`${BACKEND_URL}${currentWord.tts_ko_url}`);
+            }}
           >
             {currentWord.translated_text}
           </span>
         </div>
-      </div>
 
-      
+      {/* (A) 오디오 녹음 모달 */}
+      {isAudioModalOpen && (
+        <div className="modal" onClick={closeAudioModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <span className="close-modal" onClick={closeAudioModal}>
+              &times;
+            </span>
+            <h2>오디오 녹음</h2>
+            <SimpleAudioRecorder onStop={handleAudioStop} />
+            {audioBlob && (
+              <div className="audio-controls">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button
+                  className="confirm-audio-btn"
+                  onClick={handleConfirmAudio}
+                >
+                  확인 하기
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* 유사도 결과 모달 */}
+      {/* (B) 유사도 결과 모달 */}
       <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={() => setModalIsOpen(false)}
+        isOpen={similarityModalOpen}
+        onRequestClose={handleCloseSimilarityModal}
         contentLabel="Similarity Result"
         className="smc-modal"
         overlayClassName="smc-overlay"
       >
-        <h2>유사도 결과</h2>
-        <p>{similarityResult}</p>
-        <button onClick={() => setModalIsOpen(false)} className="smc-close-modal-btn">닫기</button>
+        <div className="modal-content">
+          <button
+            onClick={handleCloseSimilarityModal}
+            className="close-modal"
+            aria-label="모달 닫기"
+          >
+            &times;
+          </button>
+          <h2>유사도 결과</h2>
+          <p>유사도: {similarityScore !== null ? similarityScore.toFixed(2) : '계산 중...'}</p>
+          <p>{similarityMessage}</p>
+        </div>
       </Modal>
     </div>
   );
