@@ -1,6 +1,7 @@
 # app/services/similarity.py
 import librosa
 import numpy as np
+import Levenshtein
 
 def load_audio(file_path):
     """ 음성 파일 로드 """
@@ -48,3 +49,16 @@ def compare_audio_files(file1_path, file2_path):
         return similarity_percentage
     except Exception as e:
         raise ValueError(f"오류 발생: {e}")
+
+def wer(reference, hypothesis):
+    # 리스트 형태의 입력을 문자열로 변환
+    if isinstance(reference, list):
+        reference = " ".join(reference)
+    if isinstance(hypothesis, list):
+        hypothesis = " ".join(hypothesis)
+    
+    # 레벤슈타인 거리 계산
+    distance = Levenshtein.distance(reference, hypothesis)
+    
+    # WER 계산
+    return distance / len(reference.split())
