@@ -21,7 +21,7 @@ import SimpleAudioRecorder from './simpleAudioRecorder';
   // ? 'http://192.168.0.129:8000'
   // : 'http://localhost:8000';
   
-  const BACKEND_URL = 'http://192.168.219.227:8000';
+  const BACKEND_URL = 'http://192.168.0.236:8000';
 
 const Card = () => {
   const location = useLocation();

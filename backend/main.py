@@ -68,16 +68,18 @@ if not IMAGES_DIR.exists():
 app.mount("/database/images", StaticFiles(directory=str(IMAGES_DIR)), name="database_images")
 
 # 라우터 포함
+# 라우터 포함 (한 번만 포함)
 app.include_router(textToVoice.router)
 app.include_router(similarity.router)
 app.include_router(objectDetection.router)
 app.include_router(audio.router)
 app.include_router(translation.router)
 app.include_router(dbtest.router)
-app.include_router(savedMyCard.router)  # savedMyCard 라우터 추가
+app.include_router(card.router)
+app.include_router(savedMyCard.router)
 app.include_router(allCard.router)
 app.include_router(random.router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000,reload=True)
+    uvicorn.run(app, host="127.0.0.1", port=8000,reload=True)

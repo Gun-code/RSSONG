@@ -1,6 +1,6 @@
 import React from 'react';
 import '../css/main.css';
-// import Logo from '../images/LOGO.png';
+import Logo from '../images/LOGO.png';
 import MainBack from '../images/MAIN-BACK.png';
 import Myelbum from '../images/my-elbum.png';
 import RandomImg from '../images/random-img.png';
@@ -27,6 +27,11 @@ function MyCard() {
         <div className="page">
             <div className="main">
                 <div className="background-container">
+                <div className="home-icon">
+                  <Link to="/">
+                    <img src={Logo} alt="home" className="home-icon" />
+                  </Link>
+                </div>
                     <img src={MainBack} alt="background" className="background" /> 
                 </div>    
                     <div className="language-selector">

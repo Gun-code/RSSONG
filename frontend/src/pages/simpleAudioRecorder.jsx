@@ -1,6 +1,12 @@
 // SimpleAudioRecorder.jsx
 import React, { useState, useRef } from 'react';
 
+// CSS 파일 임포트
+import '../css/modal.css';
+
+import Record from '../images/record.png';
+import stop from '../images/stop.png';
+
 const SimpleAudioRecorder = ({ onStop }) => {
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
@@ -35,12 +41,17 @@ const SimpleAudioRecorder = ({ onStop }) => {
     }
   };
 
-  return (
-    <div className="simple-audio-recorder">
-      <button onClick={recording ? stopRecording : startRecording} className="record-control-btn">
-        {recording ? '녹음 중지' : '녹음 시작'}
-      </button>
-    </div>
+  return (       
+    <div>     
+         <div className='modal-btn-container'>
+        <button
+          onClick={recording ? stopRecording : startRecording}
+          className='record-modal-btn'>
+          <img src={recording ? stop : Record}
+            alt={recording ? '녹음 중지' : '녹음 시작'} className='record-btn-img'/>
+        </button>
+      </div>  
+    </div>     
   );
 };
 
