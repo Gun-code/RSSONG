@@ -1,9 +1,6 @@
-/* 기존 스타일 유지 */
-
-/* .page 스타일 */
 .page {
-    height: 834px;
-    width: 1194px;
+    height: 100vh;
+    width: 100vw;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -21,11 +18,6 @@
     height: 100%;
 }
 
-.background-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
 
 .home-icon {   
     z-index: 3;
@@ -62,12 +54,18 @@
 .MyCard_Image3 {
     position: absolute;
     top: 40%;
-    left: 30%;
-    /* MyCard_Image1 */
     transform: translate(-50%, -50%);
     max-width: 40%;
     height: auto;
     z-index: 3;
+    width: 250px;
+    height: 250px;
+    margin: 5px;
+    border-radius: 8px;
+}
+
+.MyCard_Image1 {
+    left: 30%;
 }
 
 .MyCard_Image2 {
@@ -75,15 +73,20 @@
 }
 
 .MyCard_Image3 {
-    /* 수정: MyCard_Image3의 위치 조정 (필요 시) */
     left: 50%;
-    /* 예시 */
 }
 
 .TextBox1 {
+    left: 26%;
+}
+
+.TextBox1,
+.TextBox2 {
     position: absolute;
     top: 40%;
-    left: 26%;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 18px;
     font-size: 30px;
     font-weight: bold;
     text-shadow: 0 0 2px white;
@@ -93,15 +96,8 @@
 }
 
 .TextBox2 {
-    position: absolute;
-    top: 40%;
     right: 26%;
-    font-size: 30px;
-    font-weight: bold;
-    text-shadow: 0 0 2px white;
-    line-height: 9.5;
-    color: white;
-    z-index: 2;
+
 }
 
 .language-selector {
@@ -117,7 +113,6 @@
 .underBar-container {
     position: relative;
     height: 50%;
-    bottom: 10%;
 }
 
 /* 하단 바 이미지 */
@@ -165,121 +160,6 @@
 }
 
 /* ---------------------------------------------------------------------- */
-/* 모달 관련 스타일 추가 */
-
-/* 모달 오버레이 스타일 */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    /* 반투명 배경 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    /* 다른 요소들보다 위에 표시 */
-}
-
-/* 모달 콘텐츠 스타일 */
-.modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 800px;
-    max-height: 90%;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-/* 모달 닫기 버튼 스타일 */
-.modal-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-/* MyCard 컴포넌트 스타일 추가 */
-.mycard-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.mycard-background {
-    position: relative;
-}
-
-.mycard-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.MyCard_Image1,
-.MyCard_Image2,
-.MyCard_Image3 {
-    width: 250px;
-    height: 250px;
-    margin: 5px;
-    border-radius: 8px;
-}
-
-.TextBox1,
-.TextBox2 {
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 18px;
-}
-
-.container_of_MyCard_Image1 {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.container_of_MyCard_Image1-item {
-    margin: 0 10px;
-}
-
-.container_of_MyCard_Image1-item-img {
-    width: 100px;
-    height: 100px;
-    cursor: pointer;
-    border-radius: 8px;
-}
-
-/* 반응형 디자인 추가 */
-@media (max-width: 600px) {
-    .modal-content {
-        width: 95%;
-        padding: 10px;
-    }
-
-    .MyCard_Image1,
-    .MyCard_Image2,
-    .MyCard_Image3 {
-        width: 120px;
-        height: 120px;
-        margin: 8px;
-    }
-
-    .TextBox1,
-    .TextBox2 {
-        font-size: 16px;
-    }
-}
-
-/*  */
 .container {
     position: relative;
     z-index: 1;
@@ -292,23 +172,8 @@
     margin-top: 10px;
 }
 
-.image-text-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 10px;
-}
-
-.image-caption {
-    margin-top: 10px;
-    color: #000000; /* 텍스트 색상 */
-    font-size: 16px; /* 텍스트 크기 */
-    font-weight: bold; /* 텍스트 굵기 */
-    text-align: center;
-} 
 
 /* 추가 */
-
 .album-link {
     display: flex;
     align-items: center;
@@ -327,7 +192,4 @@
     border-radius: 10px; /* 원하는 모서리 둥글게 설정 */
 }
 
-.myCard{
-    width: 150%;
-    height: 100%;
-}
+
