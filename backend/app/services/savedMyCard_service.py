@@ -14,7 +14,7 @@ class SavedMyCardService:
         """
         try:
             # MongoDB에서 username이 'user1'인 모든 문서 조회
-            mywords = await self.repository.get_item_by_username("items", "user1")
+            mywords = await self.repository.get_item_by_username("items", "user100")
 
             processed_items = []
 

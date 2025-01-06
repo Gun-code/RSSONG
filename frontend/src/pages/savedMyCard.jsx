@@ -258,10 +258,10 @@ const SavedMyCard = () => {
           </span>
 
           {/* 녹음 버튼 */}
-          <button onClick={openAudioModal} className="record-btn">
-            <img src={recordIcon} alt="마이크" />
-            녹음
-          </button>
+      
+            <img src={recordIcon} onClick={openAudioModal} className="record-btn" alt="마이크" />
+            
+          
 
           <span
             className="object-ko"
