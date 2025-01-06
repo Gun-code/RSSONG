@@ -3,7 +3,7 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI
-from app.routers import textToVoice, similarity, objectDetection, audio, translation,dbtest, card, allCard
+from app.routers import textToVoice, similarity, objectDetection, audio, translation,dbtest, card, allCard, random
 
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import Response
@@ -16,6 +16,7 @@ from app.routers import (
     translation,
     dbtest,
     allCard,
+    random,
     # 다른 라우터가 있다면 여기에 추가
 )
 from pathlib import Path
@@ -30,6 +31,7 @@ app.include_router(audio.router)
 app.include_router(translation.router)  # translation 라우터 추가
 app.include_router(dbtest.router)  # dbtest 라우터 추가
 app.include_router(card.router)  # card 라우터 추가
+app.include_router(random.router)
 
 # CORS 설정
 # origins = [
@@ -74,6 +76,7 @@ app.include_router(translation.router)
 app.include_router(dbtest.router)
 app.include_router(savedMyCard.router)  # savedMyCard 라우터 추가
 app.include_router(allCard.router)
+app.include_router(random.router)
 
 if __name__ == "__main__":
     import uvicorn
