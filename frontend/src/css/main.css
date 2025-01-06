@@ -27,6 +27,12 @@
     height: 100%;
 }
 
+.home-icon {   
+    z-index: 3;
+    max-width: 100px;
+    max-height: 100px;
+  }
+
 .background {
     position: absolute;
     top: 0;

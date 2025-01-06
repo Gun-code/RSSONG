@@ -27,7 +27,7 @@ html, body {
   max-width: 800px; /* 최대 너비 설정 */
   max-height: 400px; /* 최대 높이 설정 */
   overflow: hidden;
-  margin: 60px auto 20px auto; /* 상단 마진 조정 */
+  margin: 60px 0 20px 0; /* 상단 마진 조정 */
   border-radius: 10px;
   border: 5px solid black;
   cursor: pointer; /* 클릭 가능한 표시 */
