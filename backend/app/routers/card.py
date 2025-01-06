@@ -21,12 +21,12 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.repository.db_repository import DBRepository
 from app.services.dbtest import WordService
 from app.model.word_model import wordModel
-
+from datetime import datetime, timezone
 
 router = APIRouter()
 
 # MongoDB 연결 설정
-MONGO_URI = "mongodb://192.168.0.236:27017"
+MONGO_URI = "mongodb://221.148.97.237:27170"
 client = AsyncIOMotorClient(MONGO_URI)
 db = client["miniproject"]
 
@@ -70,12 +70,22 @@ async def scan_in_image(file: UploadFile = File(...), lang: str = Form(...)):
 
         # shutil.move()로 덮어쓰기 허용하며 이동
         shutil.move(file_path, new_file_path)
-        
+
+        # DB에 동일한 username으로 저장된 단어가 있는지 확인
+        item_cnt = await ws.get_cnt_by_username("user100")
+        print(f"item_cnt: {item_cnt}")
+
+        # item_cnt가 20개 이상이면 가장 오래된 단어 삭제
+        if item_cnt >= 20:
+            items = await ws.get_item_by_username("user100")
+            oldest_item = min(items, key=lambda x: x["update_at"])
+            await ws.delete_item(oldest_item["_id"])
+
         # DB에 동일한 word가 있는지 확인
         item = await ws.get_item_by_word(detected_object)
 
         # DB에 저장 및 업데이트
-        data = {"word": detected_object, "path": f"{detected_object}{file_extension}", "username": "user100"}
+        data = {"word": detected_object, "path": f"{detected_object}{file_extension}", "username": "user100", "update_at": datetime.now(timezone.utc), "create_at": datetime.now(timezone.utc)}
         if item:
             # 존재하는 단어 업데이트
             await ws.update_item(item["_id"], data)
