@@ -136,25 +136,11 @@ html, body {
 ===================================================== */
 .smc-saved-my-card .loading-message {
     font-size: 2rem;
-    color: #FF5722;
-    font-family: 'Comic Sans MS', cursive, sans-serif;
+    color: #f7450f;
     text-align: center;
-    margin-top: 100px;
-    animation: bounce 2s infinite;
+    margin: 0 auto;
   }
-  
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-      transform: translateY(0);
-    }
-    40% {
-      transform: translateY(-20px);
-    }
-    60% {
-      transform: translateY(-10px);
-    }
-  }
-  smc-card  
+
   
   /* =====================================================
      녹음 및 재생 섹션

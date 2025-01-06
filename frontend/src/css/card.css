@@ -31,6 +31,7 @@ html, body {
   border-radius: 10px;
   border: 5px solid black;
   cursor: pointer; /* 클릭 가능한 표시 */
+  left:30%;
 }
 
 .main-img {
