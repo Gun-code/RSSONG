@@ -1,5 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson.objectid import ObjectId
+import random
 
 class DBRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -18,9 +19,11 @@ class DBRepository:
         """
         results = await self.db[collection].find().to_list(length=None)
     
-        if results:
-            for result in results:
-                result["_id"] = str(result["_id"])  # 각 문서의 ObjectId를 문자열로 변환
+        if results is None:  # 예외 상황 처리
+            return []  # 빈 리스트 반환
+
+        for result in results:
+            result["_id"] = str(result["_id"])  # 각 문서의 ObjectId를 문자열로 변환
         return results
     
     async def get_cnt_by_username(self, collection: str, username: str) -> int:
@@ -39,6 +42,21 @@ class DBRepository:
         if result:
             result["_id"] = str(result["_id"])  # ObjectId를 문자열로 변환
         return result
+    
+    async def get_random_item(self, collection: str) -> dict:
+        """
+        모든 단어 중에서 랜덤으로 하나를 선택하고 필요한 처리를 수행합니다.
+        """
+        all_words = await self.get_all_items(collection)
+        if not all_words:
+            return None
+        
+        random_word = random.choice(all_words)
+
+        # 필요한 처리를 여기에 추가
+        random_word["_id"] = str(random_word["_id"])  # ObjectId를 문자열로 변환
+
+        return random_word
 
     async def get_item_by_username(self, collection: str, username: str) -> list:
         """
