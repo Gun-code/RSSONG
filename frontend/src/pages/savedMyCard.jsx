@@ -5,6 +5,8 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Modal from 'react-modal';
 import recordIcon from '../images/record.svg';
+import { isMobile } from 'react-device-detect';
+
 
 import '../css/savedMycard.css'; // 수정된 CSS 파일 임포트
 import logo from '../images/logo.svg';
@@ -45,6 +47,12 @@ const SavedMyCard = () => {
     }
   }, []);
 
+  const handleRetry = () => {
+    setAudioBlob(null);  // 기존 오디오 초기화
+    setSimilarityModalOpen(false);  // 유사도 모달 닫기
+    setIsAudioModalOpen(true);  // 오디오 모달 열기
+};
+
   useEffect(() => {
     fetchMyWords();
   }, [fetchMyWords]);
@@ -60,6 +68,7 @@ const SavedMyCard = () => {
       console.log('transTtsUrl is null');
     }
   }, [currentWord]);
+  const fileInputRef = useRef(null);
 
   // 오디오 재생 함수
   const playAudio = useCallback((url) => {
@@ -127,6 +136,10 @@ const SavedMyCard = () => {
       alert('유사도 체크 실패');
     }
   };
+
+    const [isNextModalOpen, setIsNextModalOpen] = useState(false);
+    const closeNextModal = () => setIsNextModalOpen(false);
+
 
   // 새로운 "확인 하기" 버튼 핸들러 추가
   const handleConfirmAudio = async () => {
@@ -302,26 +315,48 @@ const SavedMyCard = () => {
       )}
 
       {/* (B) 유사도 결과 모달 */}
-      <Modal
-        isOpen={similarityModalOpen}
-        onRequestClose={handleCloseSimilarityModal}
-        contentLabel="Similarity Result"
-        className="smc-modal"
-        overlayClassName="smc-overlay"
-      >
-        <div className="modal-content">
-          <button
-            onClick={handleCloseSimilarityModal}
-            className="close-modal"
-            aria-label="모달 닫기"
-          >
-            &times;
-          </button>
-          <h2>유사도 결과</h2>
-          <p>유사도: {similarityScore !== null ? similarityScore.toFixed(2) : '계산 중...'}</p>
-          <p>{similarityMessage}</p>
+      {similarityModalOpen && (
+    <div className="modal" onClick={handleCloseSimilarityModal}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <span className="close-modal" onClick={handleCloseSimilarityModal}>
+                &times;
+            </span>
+            <h2>유사도 결과</h2>
+            <p>유사도: {similarityScore !== null ? similarityScore.toFixed(2) : '계산 중...'}</p>
+            <p className="stars-container">
+                {similarityScore !== null && (
+                    <>
+                        <span className={`star ${similarityScore >= 0 ? 'filled' : 'empty'}`}>
+                            ★
+                        </span>
+                        <span className={`star ${similarityScore >= 30 ? 'filled' : 'empty'}`}>
+                            ★
+                        </span>
+                        <span className={`star ${similarityScore >= 60 ? 'filled' : 'empty'}`}>
+                            ★
+                        </span>
+                    </>
+                )}
+            </p>
+            <p>{similarityMessage}</p>
+            <div className="modal-buttons">
+              <button className="next-modal-btn" onClick={handleRetry}> 다시 녹음하기 </button>
+            </div>
         </div>
-      </Modal>
+  </div>
+)}
+
+
+      {/* 유사도 다음 모달 */}
+      {isNextModalOpen && (
+        <div className="modal" onClick={closeNextModal}>
+          <div className="modal-content" >
+            <h2>⭐️참 잘했어요⭐️</h2>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };
